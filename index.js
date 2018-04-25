@@ -2,9 +2,6 @@ var http = require('http');
 var url = require('url');
 var querystring = require('querystring');
 
-
-var database = {};
-
 class DataStore {
   constructor () {
     this.database = {};
@@ -27,8 +24,6 @@ class DataStore {
   }
 }
 
-var datastore = new DataStore();
-
 const PORT = 8080;
 
 const composeHTML = function(content) {
@@ -44,7 +39,7 @@ const composeHTML = function(content) {
     '</html>');
 }
 
-var server = http.createServer(function(req, res) {
+var requestProcessor = function(req, res, datastore) {
   var page = url.parse(req.url).pathname;
   var params = querystring.parse(url.parse(req.url).query);
   var starterContent = "<p>To read from the database, append <strong>?key=<em>desiredKey</em></strong> to the URL.</p><p>To write to the database, append <strong>?<em>yourKey</em>=<em>yourValue</em></strong> to the URL.</p>";
@@ -68,7 +63,10 @@ var server = http.createServer(function(req, res) {
   res.writeHead(responseData.status, {'Content-type': 'text/html'});
   res.write(composeHTML(responseData.content));
   res.end();
-});
+}
 
+var datastore = new DataStore();
+
+var server = http.createServer((req, res) => requestProcessor(req, res, datastore));
 server.listen(PORT);
 console.log("Server running on port " + String(PORT));
