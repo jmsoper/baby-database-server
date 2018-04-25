@@ -5,9 +5,33 @@ var querystring = require('querystring');
 
 var database = {};
 
-var PORT = 8080;
+class DataStore {
+  constructor () {
+    this.database = {};
+  }
+  getItem({ key, response }){
+    if (!this.database[key]){
+      response.status = 404;
+      response.content = 'Key "' + key + '" not found in database'; 
+      return response;
+    }
+    response.status = 200;
+    response.content += '<p>' + key + ': ' + this.database[key];
+    return response;
+  }
+  setItem({ key, value, response }){
+    this.database[key] = value;
+    response.status = 200;
+    response.content = '<p>Successful write to database</p><p> The value ' + value + ' has been written to the key "' + key + '"';
+    return response;
+  }
+}
 
-var composeHTML = function(content) {
+var datastore = new DataStore();
+
+const PORT = 8080;
+
+const composeHTML = function(content) {
   return ('<!DOCTYPE html>'+
     '<html>'+
     ' <head>'+
@@ -29,18 +53,12 @@ var server = http.createServer(function(req, res) {
   if (page === '/get'){
     if (params && params.key){
       var key = params.key;
-      if (database[key]){
-        responseData.content += ("\n " + String(key) + ": " + database[key]);
-      } else {
-        responseData.status = 404;
-        responseData.content += ("\n The key '" + String(key) + "' does not exist in the current database.");
-      }
+      datastore.getItem({ key: params.key, response: responseData });
     }
   } else if (page === '/set'){
     if (params){
       for (key in params){
-        database[key] = params[key];
-        responseData.content += ("<p>The value '" + params[key] + "' has been stored to the database at '" + key + "'</p>");
+        datastore.setItem({ key: key, value: params[key], response: responseData });
       }
     }
   } else {
