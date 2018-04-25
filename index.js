@@ -5,7 +5,7 @@ var querystring = require('querystring');
 
 var database = {};
 
-var portInUse = 8080;
+var PORT = 8080;
 
 var composeHTML = function(content) {
   return ('<!DOCTYPE html>'+
@@ -52,5 +52,5 @@ var server = http.createServer(function(req, res) {
   res.end();
 });
 
-server.listen(portInUse);
-console.log("Server running on port " + String(portInUse));
+server.listen(PORT);
+console.log("Server running on port " + String(PORT));
